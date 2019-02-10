@@ -1,0 +1,26 @@
+# SwiftLint configuration file
+# Refer to: https://github.com/realm/SwiftLint/#configuration
+
+disabled_rules: # rule identifiers to exclude from running
+  - line_length
+  - nesting
+  - file_length
+  - trailing_whitespace
+  - vertical_whitespace
+
+opt_in_rules: # some rules are only opt-in
+  - empty_count
+  - empty_string
+  - first_where
+  - force_unwrapping
+  - unneeded_parentheses_in_closure_argument
+  - vertical_parameter_alignment_on_call
+
+identifier_name:
+  min_length: 1
+
+function_body_length: 60
+
+excluded: # paths to ignore during linting. Takes precedence over `included`.
+  - Libs
+  - Pods

@@ -1,0 +1,90 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+default_platform(:ios)
+
+platform :ios do
+  desc "Creates a new release by getting the version from branch name. Exemple: release/1.2.3 will bump both project and podspec to 1.2.3 and tag the version on git"
+  lane :releasePodVersion do
+
+    # make sure the working tree is clean
+    ensure_git_status_clean()
+
+    # make sure we are on a release branch
+    ensure_git_branch(branch: 'release/*')
+
+    # Determining the version number from the branch name
+    version = git_branch().gsub("release/", "")
+
+    # Make sure the tag is not empty
+    unless !version.empty?
+      UI.user_error!("An error occured while getting the version from branch name")
+    end
+
+    # Making sure the tag does not already exist
+    unless !git_tag_exists(tag: version)
+      UI.user_error!("The tag "+ version +" already exists")
+    end
+
+    # Safety check are done
+    UI.success("The tag "+ version +" is available")
+    UI.success("Release pre-check suceeded 👌")
+
+    # Bump the version project & podspec version
+    version_bump_podspec(path: "../CHBRemoteConfig.podspec", version_number: version)
+    increment_version_number(version_number: version)
+
+    # Check if modified files are only with .plist extensions
+    modifiedFiles = `git diff --name-only --diff-filter=M -- . ":(exclude)*.plist" -- . ":(exclude)*.podspec"`
+    unless modifiedFiles.empty?
+      UI.user_error!("The following file have been modified for no reason:\n "+modifiedFiles+"\n At this point only .plist file should be in the working tree. Aborting.")
+    end
+
+    # If the version number was already update we skip the bumping commit
+    unless sh("git status --porcelain").empty?
+      # Commit bump version
+      sh("git add --all")
+      sh("git commit -m \"Bumping project and podspec to version "+version+"\"")
+      sh('git push origin')
+    end
+
+    # Git flow finish release
+    # tag version
+    sh("git tag "+version)
+    sh("git push origin "+version)
+
+    # Store the starting branch before checking out
+    releaseBranch = git_branch()
+
+    # Fetch all branches to make sure there's no issues with checkout
+    # This line is required to run on Bitrise
+    sh("git fetch")
+
+    # Merge into master
+    sh("git checkout master")
+    sh("git merge --no-ff "+releaseBranch)
+    sh("git push origin")
+
+    # Merge into develop
+    sh("git checkout develop")
+    sh("git merge --no-ff "+releaseBranch)
+    sh("git push origin")
+
+    ## Delete the branch both locally and from remote
+    sh("git push --delete origin "+releaseBranch)
+    sh("git branch -d "+releaseBranch)
+
+  end
+end

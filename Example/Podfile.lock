@@ -1,0 +1,23 @@
+PODS:
+  - Alamofire (4.8.1)
+  - CHBRemoteConfig (0.1.0):
+    - Alamofire
+
+DEPENDENCIES:
+  - CHBRemoteConfig (from `../`)
+
+SPEC REPOS:
+  https://github.com/cocoapods/specs.git:
+    - Alamofire
+
+EXTERNAL SOURCES:
+  CHBRemoteConfig:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  Alamofire: 16ce2c353fb72865124ddae8a57c5942388f4f11
+  CHBRemoteConfig: d191483be07262d33122af890a6186fbccc952b2
+
+PODFILE CHECKSUM: eb3844f269bb62c4db5313adfc22c45fc32be85a
+
+COCOAPODS: 1.5.3
